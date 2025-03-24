@@ -34,9 +34,9 @@ var (
 
 func main() {
 	// Use config or fallback to original behavior
-	_, errInit := GVProxyInit()
-	if errInit != nil {
-		log.Fatal(errInit.Error())
+	_, err := GVProxyInit()
+	if err != nil {
+		log.Fatal(err.Error())
 	}
 
 	// Report version
@@ -272,7 +272,7 @@ func run(ctx context.Context, g *errgroup.Group) error {
 		})
 	}
 
-	if config.Interfaces.StdIO != "" {
+	if config.Interfaces.Stdio != "" {
 		g.Go(func() error {
 			conn := stdio.GetStdioConn()
 			return vn.AcceptStdio(ctx, conn)

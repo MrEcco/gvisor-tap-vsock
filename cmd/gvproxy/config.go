@@ -56,7 +56,7 @@ type GVProxyConfig struct {
 		VPNKit string `yaml:"vpnkit,omitempty"`
 		Qemu   string `yaml:"qemu,omitempty"`
 		Bess   string `yaml:"bess,omitempty"`
-		StdIO  string `yaml:"stdio,omitempty"`
+		Stdio  string `yaml:"stdio,omitempty"`
 		Vfkit  string `yaml:"vfkit,omitempty"`
 	} `yaml:"interfaces,omitempty"`
 	Forwards []GVProxyConfigForward `yaml:"forwards,omitempty"`
@@ -83,9 +83,9 @@ func GVProxyInit() (*GVProxyConfig, error) {
 	version.AddFlag()
 
 	// Pass it to the testable function
-	_, errArgParse := GVProxyArgParse(flag.CommandLine, &args, os.Args[1:])
-	if errArgParse != nil {
-		return &config, fmt.Errorf("failed to parse command line arguments: %s", errArgParse.Error())
+	_, err := GVProxyArgParse(flag.CommandLine, &args, os.Args[1:])
+	if err != nil {
+		return &config, fmt.Errorf("failed to parse command line arguments: %s", err.Error())
 	}
 
 	if version.ShowVersion() {
@@ -145,17 +145,17 @@ func GVProxyConfigure(config *GVProxyConfig, args *GVProxyArgs, version string) 
 	}
 
 	// Parse subnet address for further use
-	naddr, errGWIPParse := netip.ParsePrefix(config.Stack.Subnet)
-	if errGWIPParse != nil {
-		return config, errors.Errorf("failed to parse subnet: %s", errGWIPParse.Error())
+	naddr, err := netip.ParsePrefix(config.Stack.Subnet)
+	if err != nil {
+		return config, fmt.Errorf("failed to parse subnet: %s", err.Error())
 	}
-	fuaddr, errFUAddr := getFirsUsableIPFromSubnet(naddr)
-	if errFUAddr != nil {
-		return config, errors.Errorf("failed to identify first usable address in subnet: %s", errFUAddr.Error())
+	fuaddr, err := getFirsUsableIPFromSubnet(naddr)
+	if err != nil {
+		return config, fmt.Errorf("failed to identify first usable address in subnet: %s", err.Error())
 	}
-	luaddr, errLUAddr := getLastUsableIPFromSubnet(naddr)
-	if errLUAddr != nil {
-		return config, errors.Errorf("failed to identify last usable address in subnet: %s", errLUAddr.Error())
+	luaddr, err := getLastUsableIPFromSubnet(naddr)
+	if err != nil {
+		return config, fmt.Errorf("failed to identify last usable address in subnet: %s", err.Error())
 	}
 
 	if config.Stack.GatewayIP == "" {
@@ -266,7 +266,7 @@ func GVProxyConfigure(config *GVProxyConfig, args *GVProxyArgs, version string) 
 			return config, errors.New("listen-bess must be unixpacket:// address")
 		}
 		if _, err := os.Stat(uri.Path); err == nil {
-			return config, errors.Errorf("%q already exists", uri.Path)
+			return config, fmt.Errorf("%q already exists", uri.Path)
 		}
 	}
 	if config.Interfaces.Vfkit != "" {
