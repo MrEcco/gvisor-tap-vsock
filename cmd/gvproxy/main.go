@@ -28,13 +28,12 @@ import (
 )
 
 var (
-	config   GVProxyConfig
 	exitCode int
 )
 
 func main() {
 	// Use config or fallback to original behavior
-	_, err := GVProxyInit()
+	config, err := GVProxyInit()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -73,7 +72,7 @@ func main() {
 	winquit.SimulateSigTermOnQuit(sigChan)
 
 	groupErrs.Go(func() error {
-		return run(ctx, groupErrs)
+		return run(ctx, groupErrs, config)
 	})
 
 	// Wait for something to happen
@@ -125,7 +124,7 @@ func InDebugMode() bool {
 	return log.GetLevel().String() == "debug"
 }
 
-func run(ctx context.Context, g *errgroup.Group) error {
+func run(ctx context.Context, g *errgroup.Group, config *GVProxyConfig) error {
 	vn, err := virtualnetwork.New(&config.Stack)
 	if err != nil {
 		return err

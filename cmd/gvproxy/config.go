@@ -77,6 +77,7 @@ func GVProxyVersion() string {
 
 func GVProxyInit() (*GVProxyConfig, error) {
 	var args GVProxyArgs
+	var config GVProxyConfig
 
 	version := types.NewVersion("gvproxy")
 	version.AddFlag()
