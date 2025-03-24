@@ -201,11 +201,6 @@ func GVProxyConfigure(config *GVProxyConfig, args *GVProxyArgs, version string) 
 			luaddr.String(),
 		}
 	}
-	if len(config.Listen) == 0 {
-		if args.config != "" {
-			config.Listen = getDefaultListen(runtime.GOOS)
-		}
-	}
 
 	// Default DNS zone enabled only for the default mode
 	// Default DNS search domains enabled only for the default mode
@@ -381,27 +376,6 @@ func GVProxyConfigure(config *GVProxyConfig, args *GVProxyArgs, version string) 
 	}
 
 	return config, nil
-}
-
-func getDefaultListen(osname string) []string {
-	if osname == "darwin" {
-		// Check homebrew available
-		if os.Getenv("HOMEBREW_PREFIX") != "" {
-			os.MkdirAll(os.Getenv("HOMEBREW_PREFIX")+"/var/run/gvproxy", os.ModePerm)
-			return []string{"unix://" + os.Getenv("HOMEBREW_PREFIX") + "/var/run/gvproxy/default.sock"}
-		} else {
-			os.MkdirAll("/var/run/gvproxy", os.ModePerm)
-			return []string{"unix:///var/run/gvproxy/default.sock"}
-		}
-	} else if osname == "linux" {
-		os.MkdirAll("/var/run/gvproxy", os.ModePerm)
-		return []string{"unix:///var/run/gvproxy/default.sock"}
-	} else if osname == "windows" {
-		return []string{"unix:\\\\\\.\\pipe\\gvproxy\\default_sock"}
-	}
-
-	log.Fatal("unsupported operating system")
-	return nil
 }
 
 func getFirsUsableIPFromSubnet(network netip.Prefix) (netip.Addr, error) {
