@@ -19,7 +19,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Legacy hardcode
 const (
 	// 	gatewayIP   = "192.168.127.1"
 	sshHostPort = "192.168.127.2:22"
@@ -180,11 +179,11 @@ func GVProxyConfigure(config *GVProxyConfig, args *GVProxyArgs, version string) 
 		}
 	}
 
-	// Default DNS zone enabled only for legacy mode
-	// Default DNS search domains enabled only for legacy mode
-	// Default forwards enabled only for legacy mode
-	// Default static leases enabled only for legacy mode
-	// Default vpnkit mac addresses enabled only for legacy mode
+	// Default DNS zone enabled only for the default mode
+	// Default DNS search domains enabled only for the default mode
+	// Default forwards enabled only for the default mode
+	// Default static leases enabled only for the default mode
+	// Default vpnkit mac addresses enabled only for the default mode
 
 	// Patch config with CLI args
 	if args.debug {
@@ -230,8 +229,7 @@ func GVProxyConfigure(config *GVProxyConfig, args *GVProxyArgs, version string) 
 	if config.LogFile != "" {
 		lf, err := os.Create(config.LogFile)
 		if err != nil {
-			fmt.Printf("unable to open log file %s, exiting...\n", config.LogFile)
-			os.Exit(1)
+			return config, fmt.Errorf("unable to open log file %s", config.LogFile)
 		}
 		defer func() {
 			if err := lf.Close(); err != nil {
@@ -313,7 +311,7 @@ func GVProxyConfigure(config *GVProxyConfig, args *GVProxyArgs, version string) 
 		config.Stack.Debug = true
 	}
 
-	// Handle legacy behavior without config
+	// Handle the default behavior without config
 	if args.config == "" {
 		if args.sshPort != -1 && args.sshPort < 1024 || args.sshPort > 65535 {
 			return config, errors.New("ssh-port value must be between 1024 and 65535")
