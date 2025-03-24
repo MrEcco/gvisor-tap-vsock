@@ -84,7 +84,7 @@ func GVProxyInit() (*GVProxyConfig, error) {
 	// Pass it to the testable function
 	_, err := GVProxyArgParse(flag.CommandLine, &args, os.Args[1:])
 	if err != nil {
-		return &config, fmt.Errorf("failed to parse command line arguments: %s", err.Error())
+		return nil, fmt.Errorf("failed to parse command line arguments: %w", err)
 	}
 
 	if version.ShowVersion() {
@@ -96,11 +96,11 @@ func GVProxyInit() (*GVProxyConfig, error) {
 	if args.config != "" {
 		content, err := os.ReadFile(args.config)
 		if err != nil {
-			return &config, fmt.Errorf("failed to read config file: %s", err.Error())
+			return nil, fmt.Errorf("failed to read config file: %w", err)
 		}
 
 		if err := yaml.Unmarshal(content, &config); err != nil {
-			return &config, fmt.Errorf("failed to parse configuration: %s", err.Error())
+			return nil, fmt.Errorf("failed to parse configuration: %w", err)
 		}
 	}
 
@@ -174,15 +174,15 @@ func GVProxyConfigure(config *GVProxyConfig, args *GVProxyArgs, version string) 
 	// Parse subnet address for further use
 	naddr, err := netip.ParsePrefix(config.Stack.Subnet)
 	if err != nil {
-		return config, fmt.Errorf("failed to parse subnet: %s", err.Error())
+		return config, fmt.Errorf("failed to parse subnet: %w", err)
 	}
 	fuaddr, err := getFirsUsableIPFromSubnet(naddr)
 	if err != nil {
-		return config, fmt.Errorf("failed to identify first usable address in subnet: %s", err.Error())
+		return config, fmt.Errorf("failed to identify first usable address in subnet: %w", err)
 	}
 	luaddr, err := getLastUsableIPFromSubnet(naddr)
 	if err != nil {
-		return config, fmt.Errorf("failed to identify last usable address in subnet: %s", err.Error())
+		return config, fmt.Errorf("failed to identify last usable address in subnet: %w", err)
 	}
 
 	if config.Stack.GatewayIP == "" {
@@ -261,7 +261,7 @@ func GVProxyConfigure(config *GVProxyConfig, args *GVProxyArgs, version string) 
 			return config, errors.Wrapf(err, "invalid value for bess listen address")
 		}
 		if uri.Scheme != "unixpacket" {
-			return config, errors.New("listen-bess must be unixpacket:// address")
+			return config, errors.New("bess listen address must be unixpacket:// address")
 		}
 		if _, err := os.Stat(uri.Path); err == nil {
 			return config, fmt.Errorf("%q already exists", uri.Path)
@@ -270,10 +270,10 @@ func GVProxyConfigure(config *GVProxyConfig, args *GVProxyArgs, version string) 
 	if config.Interfaces.Vfkit != "" {
 		uri, err := url.Parse(config.Interfaces.Vfkit)
 		if err != nil || uri == nil {
-			return config, errors.Wrapf(err, "invalid value for listen-vfkit")
+			return config, errors.Wrapf(err, "invalid value for vfkit listen address")
 		}
 		if uri.Scheme != "unixgram" {
-			return config, errors.New("listen-vfkit must be unixgram:// address")
+			return config, errors.New("vfkit listen address must be unixgram:// address")
 		}
 		if _, err := os.Stat(uri.Path); err == nil {
 			return config, errors.Errorf("%q already exists", uri.Path)
