@@ -149,11 +149,11 @@ func GVProxyConfigure(config *GVProxyConfig, args *GVProxyArgs, version string) 
 		if err != nil {
 			return config, fmt.Errorf("unable to open log file %s", config.LogFile)
 		}
-		defer func() {
+		log.DeferExitHandler(func() {
 			if err := lf.Close(); err != nil {
 				fmt.Printf("unable to close log-file: %q\n", err)
 			}
-		}()
+		})
 		log.SetOutput(lf)
 
 		// If debug is set, lets seed the log file with some basic information

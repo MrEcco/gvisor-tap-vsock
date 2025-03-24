@@ -43,7 +43,7 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	// Make this the last defer statement in the stack
-	defer os.Exit(exitCode)
+	defer log.Exit(exitCode)
 
 	// Create a PID file if requested
 	if config.PIDFile != "" {
