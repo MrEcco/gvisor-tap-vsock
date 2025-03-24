@@ -41,6 +41,10 @@ func main() {
 	// Report version
 	log.Info(GVProxyVersion())
 
+	ctx, cancel := context.WithCancel(context.Background())
+	// Make this the last defer statement in the stack
+	defer os.Exit(exitCode)
+
 	// Create a PID file if requested
 	if config.PIDFile != "" {
 		f, err := os.Create(config.PIDFile)
@@ -50,7 +54,7 @@ func main() {
 		// Remove the pid-file when exiting
 		defer func() {
 			if err := os.Remove(config.PIDFile); err != nil {
-				log.Errorf("failded to remove pidfile: %s", err.Error())
+				log.Errorf("failed to remove pidfile: %s", err.Error())
 			}
 		}()
 		pid := os.Getpid()
@@ -58,10 +62,6 @@ func main() {
 			log.Fatalf("failed to write pidfile: %s", err.Error())
 		}
 	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	// Make this the last defer statement in the stack
-	defer os.Exit(exitCode)
 
 	groupErrs, ctx := errgroup.WithContext(ctx)
 	// Setup signal channel for catching user signals
