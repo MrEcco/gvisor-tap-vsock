@@ -132,6 +132,34 @@ func GVProxyArgParse(flagSet *flag.FlagSet, args *GVProxyArgs, argv []string) (*
 }
 
 func GVProxyConfigure(config *GVProxyConfig, args *GVProxyArgs, version string) (*GVProxyConfig, error) {
+	// Set log level
+	if logLevel, err := log.ParseLevel(strings.ToLower(config.LogLevel)); err != nil {
+		log.Warningf("bad log level \"%s\", falling back to \"info\"", config.LogLevel)
+		log.SetLevel(log.InfoLevel)
+	} else {
+		log.SetLevel(logLevel)
+	}
+
+	// Set log file
+	if config.LogFile != "" {
+		lf, err := os.Create(config.LogFile)
+		if err != nil {
+			return config, fmt.Errorf("unable to open log file %s", config.LogFile)
+		}
+		defer func() {
+			if err := lf.Close(); err != nil {
+				fmt.Printf("unable to close log-file: %q\n", err)
+			}
+		}()
+		log.SetOutput(lf)
+
+		// If debug is set, lets seed the log file with some basic information
+		// about the environment and how it was called
+		log.Debugf("gvproxy version: %q", version)
+		log.Debugf("os: %q arch: %q", runtime.GOOS, runtime.GOARCH)
+		log.Debugf("command line: %q", os.Args)
+	}
+
 	// Set defaults
 	if config.LogLevel == "" {
 		config.LogLevel = "info"
@@ -215,34 +243,6 @@ func GVProxyConfigure(config *GVProxyConfig, args *GVProxyArgs, version string) 
 	}
 	if args.mtu != 0 {
 		config.Stack.MTU = args.mtu
-	}
-
-	// Set log level
-	if logLevel, err := log.ParseLevel(strings.ToLower(config.LogLevel)); err != nil {
-		log.Warningf("bad log level \"%s\", falling back to \"info\"", config.LogLevel)
-		log.SetLevel(log.InfoLevel)
-	} else {
-		log.SetLevel(logLevel)
-	}
-
-	// Set log file
-	if config.LogFile != "" {
-		lf, err := os.Create(config.LogFile)
-		if err != nil {
-			return config, fmt.Errorf("unable to open log file %s", config.LogFile)
-		}
-		defer func() {
-			if err := lf.Close(); err != nil {
-				fmt.Printf("unable to close log-file: %q\n", err)
-			}
-		}()
-		log.SetOutput(lf)
-
-		// If debug is set, lets seed the log file with some basic information
-		// about the environment and how it was called
-		log.Debugf("gvproxy version: %q", version)
-		log.Debugf("os: %q arch: %q", runtime.GOOS, runtime.GOARCH)
-		log.Debugf("command line: %q", os.Args)
 	}
 
 	// Make sure the qemu socket provided is valid syntax
