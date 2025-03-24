@@ -21,7 +21,7 @@ import (
 	"github.com/containers/gvisor-tap-vsock/pkg/transport"
 	"github.com/containers/gvisor-tap-vsock/pkg/virtualnetwork"
 	"github.com/containers/winquit/pkg/winquit"
-	"github.com/dustin/go-humanize"
+	humanize "github.com/dustin/go-humanize"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
@@ -165,7 +165,7 @@ func run(ctx context.Context, g *errgroup.Group, config *GVProxyConfig) error {
 			for {
 				select {
 				case <-time.After(5 * time.Second):
-					log.Debugf("%v sent to the VM, %v received from the VM\n", humanize.Bytes(vn.BytesSent()), humanize.Bytes(vn.BytesReceived()))
+					log.Debugf("%s sent to the VM, %s received from the VM\n", humanize.Bytes(vn.BytesSent()), humanize.Bytes(vn.BytesReceived()))
 				case <-ctx.Done():
 					break debugLog
 				}

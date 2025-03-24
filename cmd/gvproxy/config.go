@@ -16,7 +16,7 @@ import (
 	"github.com/containers/gvisor-tap-vsock/pkg/types"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v3"
+	yaml "gopkg.in/yaml.v3"
 )
 
 const (
