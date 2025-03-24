@@ -133,6 +133,10 @@ func GVProxyArgParse(flagSet *flag.FlagSet, args *GVProxyArgs, argv []string) (*
 }
 
 func GVProxyConfigure(config *GVProxyConfig, args *GVProxyArgs, version string) (*GVProxyConfig, error) {
+	if args.debug {
+		config.LogLevel = "debug"
+	}
+
 	// Set log level
 	if logLevel, err := log.ParseLevel(strings.ToLower(config.LogLevel)); err != nil {
 		log.Warningf("bad log level \"%s\", falling back to \"info\"", config.LogLevel)
@@ -210,9 +214,6 @@ func GVProxyConfigure(config *GVProxyConfig, args *GVProxyArgs, version string) 
 	// Default vpnkit mac addresses enabled only for the default mode
 
 	// Patch config with CLI args
-	if args.debug {
-		config.LogLevel = "debug"
-	}
 	if args.logFile != "" {
 		config.LogFile = args.logFile
 	}

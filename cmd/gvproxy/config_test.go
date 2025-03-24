@@ -282,10 +282,9 @@ interfaces:
 		},
 		{
 			CaseName:    "Legacy from README: vsock",
-			Args:        []string{"-debug", "-listen", "vsock://:1024", "-listen", "unix:///tmp/network.sock"},
+			Args:        []string{"-debug", "-listen", "unix:///tmp/network.sock", "-listen-qemu", "unix:///tmp/qemu.sock"},
 			InputConfig: "",
 			ResultConfig: `listen:
-    - vsock://:1024
     - unix:///tmp/network.sock
 log-level: debug
 stack:
@@ -318,15 +317,15 @@ stack:
         192.168.127.2: 5a:94:ef:e4:0c:ee
     vpnKitUUIDMacAddresses:
         c3d68012-0208-11ea-9fd7-f2189899ab08: 5a:94:ef:e4:0c:ee
+interfaces:
+    qemu: unix:///tmp/qemu.sock
 `,
 		},
 		{
 			CaseName:    "config: empty config",
 			Args:        []string{"-config", "config.yaml"},
 			InputConfig: ``,
-			ResultConfig: `listen:
-    - default
-log-level: info
+			ResultConfig: `log-level: info
 stack:
     mtu: 1500
     subnet: 192.168.127.0/24
@@ -397,9 +396,7 @@ stack:
         10.0.0.3: "10:11:11:11:11:03"
         10.0.0.100: "10:11:11:11:11:dd"
 `,
-			ResultConfig: `listen:
-    - default
-log-level: info
+			ResultConfig: `log-level: info
 stack:
     mtu: 1500
     subnet: 10.0.0.0/16
@@ -425,9 +422,7 @@ stack:
         127.0.0.1:59080: 192.168.127.2:80
         127.0.0.1:59443: 192.168.127.2:443
 `,
-			ResultConfig: `listen:
-    - default
-log-level: info
+			ResultConfig: `log-level: info
 stack:
     mtu: 1500
     subnet: 10.0.0.0/16
@@ -454,9 +449,7 @@ forwards:
       user: ???
       identity: ???
 `,
-			ResultConfig: `listen:
-    - default
-log-level: info
+			ResultConfig: `log-level: info
 stack:
     mtu: 1500
     subnet: 10.0.0.0/16
@@ -478,9 +471,7 @@ forwards:
 			CaseName:    "debug check #1",
 			Args:        []string{"-config", "config.yaml"},
 			InputConfig: `log-level: debug`,
-			ResultConfig: `listen:
-    - default
-log-level: debug
+			ResultConfig: `log-level: debug
 stack:
     debug: true
     mtu: 1500
@@ -497,9 +488,7 @@ stack:
 			CaseName:    "debug check #2",
 			Args:        []string{"-debug", "-config", "config.yaml"},
 			InputConfig: `log-level: error`,
-			ResultConfig: `listen:
-    - default
-log-level: debug
+			ResultConfig: `log-level: debug
 stack:
     debug: true
     mtu: 1500
