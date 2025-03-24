@@ -1,10 +1,8 @@
 package main
 
 import (
-	"encoding/binary"
 	"flag"
 	"fmt"
-	"math"
 	"net"
 	"net/netip"
 	"net/url"
@@ -388,7 +386,7 @@ func getFirsUsableIPFromSubnet(network netip.Prefix) (netip.Addr, error) {
 	}
 
 	b := network.Masked().Addr().AsSlice()
-	b[len(b)-1] = b[len(b)-1] + 1
+	b[len(b)-1] += 1
 
 	addr, ok := netip.AddrFromSlice(b)
 	if !ok {
@@ -399,41 +397,17 @@ func getFirsUsableIPFromSubnet(network netip.Prefix) (netip.Addr, error) {
 }
 
 func getLastUsableIPFromSubnet(network netip.Prefix) (netip.Addr, error) {
-	bits := network.Addr().BitLen()
-	cidr := network.Bits()
-
 	// The network must have at least 5 IP addresses: network, broadcast, gateway, guest, and preferably host
 	// v4/30 has only 2 devices, thus prefer at least v4/29 CIDR. This code works also for IPv6, just in case
-	if (cidr + 3) > bits {
+	if (network.Bits() + 3) > network.Addr().BitLen() {
 		return netip.Addr{}, errors.New("too small network")
 	}
 
-	b := network.Masked().Addr().AsSlice()
-	m := make([]byte, bits/8)
-
-	if bits == 32 {
-		binary.BigEndian.PutUint32(m, uint32(int(math.Pow(2, float64(bits-cidr)))-1))
-	} else if bits == 128 {
-		m1 := make([]byte, bits/16)
-		m2 := make([]byte, bits/16)
-		if (bits - cidr) < 64 {
-			binary.BigEndian.PutUint64(m2, uint64(int(math.Pow(2, float64(bits-cidr)))-1))
-		} else {
-			binary.BigEndian.PutUint64(m1, uint64(int(math.Pow(2, float64(bits-cidr-64)))-1))
-			binary.BigEndian.PutUint64(m2, math.MaxUint64)
-		}
-		for i := 0; i < bits/16; i++ {
-			m[i] = m1[i]
-			m[i+(bits/16)] = m2[i]
-		}
-	} else {
-		return netip.Addr{}, errors.New("unsupported network address")
+	var b []byte = network.Masked().Addr().AsSlice()
+	for i, v := range net.CIDRMask(network.Bits(), network.Addr().BitLen()) {
+		b[i] += ^v
 	}
-	for i := 0; i < bits/8; i++ {
-		b[i] = b[i] | m[i]
-	}
-
-	b[len(b)-1] = b[len(b)-1] - 1
+	b[len(b)-1] -= 1
 
 	addr, ok := netip.AddrFromSlice(b)
 	if !ok {
